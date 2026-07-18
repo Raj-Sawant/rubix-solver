@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rubik's Cube Solver — Scan & Solve with AI</title>
+    <meta name="description" content="Scan your Rubik's cube with your webcam and get animated step-by-step solution">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Three.js import map -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+    }
+    </script>
+</head>
+<body>
+    <div id="app">
+
+        <!-- ===================== HEADER ===================== -->
+        <header id="app-header">
+            <h1 id="app-title">🧊 Rubik's Cube Solver</h1>
+
+            <nav id="step-indicators">
+                <div class="step active" data-step="1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Scan</div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step" data-step="2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Verify</div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step" data-step="3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Solve</div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step" data-step="4">
+                    <div class="step-number">4</div>
+                    <div class="step-label">Play</div>
+                </div>
+            </nav>
+        </header>
+
+        <!-- ===================== PHASE 1 — SCAN ===================== -->
+        <section id="phase-scan" class="phase active">
+
+            <div id="scan-left">
+                <div id="webcam-container">
+                    <video id="webcam-video" autoplay playsinline muted></video>
+                    <canvas id="scan-overlay"></canvas>
+                </div>
+                <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px; justify-content: center;">
+                    <input type="checkbox" id="mirror-camera-cb" checked style="accent-color: var(--color-primary);">
+                    <label for="mirror-camera-cb" style="color: var(--text-secondary); font-size: 0.85rem; cursor: pointer;">Mirror Video (uncheck if left/right colors are flipped)</label>
+                </div>
+
+                <div id="scan-controls">
+                    <div id="current-face-indicator">
+                        <span id="face-label">Front (F)</span>
+                        <span id="face-color-dot"></span>
+                        <div id="scan-cube-icon">
+                            <div class="cube-3d">
+                                <div class="cube-face cube-front"></div>
+                                <div class="cube-face cube-back"></div>
+                                <div class="cube-face cube-left"></div>
+                                <div class="cube-face cube-right"></div>
+                                <div class="cube-face cube-top"></div>
+                                <div class="cube-face cube-bottom"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="scan-instruction" class="scan-instruction">Show the Front (Green) face. Make sure White is pointing UP.</div>
+                    <button id="btn-capture" class="btn btn-primary">📸 Capture Face</button>
+                </div>
+            </div>
+
+            <div id="scan-right">
+                <h3>Scanned Faces</h3>
+
+                <div id="face-preview-grid">
+                    <!-- Front -->
+                    <div class="face-preview" data-face="F">
+                        <div class="face-preview-label">F</div>
+                        <div class="face-mini-grid">
+                            <div class="mini-sticker"></div><div class="mini-sticker"></div><div class="mini-sticker"></div>
+                            <div class="mini-sticker"></div><div class="mini-sticker"></div><div class="mini-sticker"></div>
+                            <div class="mini-sticker"></div><div class="mini-sticker"></div><div class="mini-sticker"></div>
+                        </div>
+                        <div class="face-preview-status"></div>
+                    </div>
+                    <!-- Right -->
+                    <div class="face-preview" data-face="R">
+                        <div class="face-preview-label">R</div>
+                        <div class="face-mini-grid">
+                            <div class="mini-sticker"></div><div class="mini-sticker"></div><div class="mini-sticker"></div>
+                            <div class="mini-sticker"></div><div class="mini-sticker"></div><div class="mini-sticker"></div>
+                            <div class="mini-sticker"></div><div class="mini-sticker"></div><div class="mini-sticker"></div>
+                        </div>
+                        <div class="face-preview-status"></div>
+                    </div>
+                    <!-- Back -->
+                    <div class="face-preview" data-face="B">
+                        <div class="face-preview-label">B</div>
+                        <div class="face-mini-grid">
+                            <div class="mini-sticker"></div><div class="mini-sticker"></div><div class="mini-sticker"></div>
+                            <div class="mini-sticker"></div><div class="mini-sticker"></div><div class="mini-sticker"></div>
+                            <div class="mini-sticker"></div><div class="mini-sticker"></div><div class="mini-sticker"></div>
+                        </div>
+                        <div class="face-preview-status"></div>
+                    </div>
+                    <!-- Left -->
+                    <div class="face-preview" data-face="L">
+                        <div class="face-preview-label">L</div>
+                        <div class="face-mini-grid">
+                            <div class="mini-sticker"></div><div class="mini-sticker"></div><div class="mini-sticker"></div>
+                            <div class="mini-sticker"></div><div class="mini-sticker"></div><div class="mini-sticker"></div>
+                            <div class="mini-sticker"></div><div class="mini-sticker"></div><div class="mini-sticker"></div>
+                        </div>
+                        <div class="face-preview-status"></div>
+                    </div>
+                    <!-- Up -->
+                    <div class="face-preview" data-face="U">
+                        <div class="face-preview-label">U</div>
+                        <div class="face-mini-grid">
+                            <div class="mini-sticker"></div><div class="mini-sticker"></div><div class="mini-sticker"></div>
+                            <div class="mini-sticker"></div><div class="mini-sticker"></div><div class="mini-sticker"></div>
+                            <div class="mini-sticker"></div><div class="mini-sticker"></div><div class="mini-sticker"></div>
+                        </div>
+                        <div class="face-preview-status"></div>
+                    </div>
+                    <!-- Down -->
+                    <div class="face-preview" data-face="D">
+                        <div class="face-preview-label">D</div>
+                        <div class="face-mini-grid">
+                            <div class="mini-sticker"></div><div class="mini-sticker"></div><div class="mini-sticker"></div>
+                            <div class="mini-sticker"></div><div class="mini-sticker"></div><div class="mini-sticker"></div>
+                            <div class="mini-sticker"></div><div class="mini-sticker"></div><div class="mini-sticker"></div>
+                        </div>
+                        <div class="face-preview-status"></div>
+                    </div>
+                </div>
+
+                <button id="btn-skip-scan" class="btn btn-ghost">⌨️ Enter Manually Instead</button>
+                <button id="btn-goto-verify" class="btn btn-primary" disabled>Continue to Verify →</button>
+            </div>
+
+        </section>
+
+        <!-- ===================== PHASE 2 — VERIFY ===================== -->
+        <section id="phase-verify" class="phase">
+            <h2>Verify & Correct Colors</h2>
+            <p class="phase-subtitle">Click any sticker to repaint it. Make sure every face matches your physical cube.</p>
+
+            <div id="cube-net-container">
+                <!-- U face — row 1, col 2 -->
+                <div class="net-face" data-face="U">
+                    <div class="net-face-label">U</div>
+                    <div class="net-sticker" data-face="U" data-index="0"></div>
+                    <div class="net-sticker" data-face="U" data-index="1"></div>
+                    <div class="net-sticker" data-face="U" data-index="2"></div>
+                    <div class="net-sticker" data-face="U" data-index="3"></div>
+                    <div class="net-sticker" data-face="U" data-index="4"></div>
+                    <div class="net-sticker" data-face="U" data-index="5"></div>
+                    <div class="net-sticker" data-face="U" data-index="6"></div>
+                    <div class="net-sticker" data-face="U" data-index="7"></div>
+                    <div class="net-sticker" data-face="U" data-index="8"></div>
+                </div>
+
+                <!-- L face — row 2, col 1 -->
+                <div class="net-face" data-face="L">
+                    <div class="net-face-label">L</div>
+                    <div class="net-sticker" data-face="L" data-index="0"></div>
+                    <div class="net-sticker" data-face="L" data-index="1"></div>
+                    <div class="net-sticker" data-face="L" data-index="2"></div>
+                    <div class="net-sticker" data-face="L" data-index="3"></div>
+                    <div class="net-sticker" data-face="L" data-index="4"></div>
+                    <div class="net-sticker" data-face="L" data-index="5"></div>
+                    <div class="net-sticker" data-face="L" data-index="6"></div>
+                    <div class="net-sticker" data-face="L" data-index="7"></div>
+                    <div class="net-sticker" data-face="L" data-index="8"></div>
+                </div>
+
+                <!-- F face — row 2, col 2 -->
+                <div class="net-face" data-face="F">
+                    <div class="net-face-label">F</div>
+                    <div class="net-sticker" data-face="F" data-index="0"></div>
+                    <div class="net-sticker" data-face="F" data-index="1"></div>
+                    <div class="net-sticker" data-face="F" data-index="2"></div>
+                    <div class="net-sticker" data-face="F" data-index="3"></div>
+                    <div class="net-sticker" data-face="F" data-index="4"></div>
+                    <div class="net-sticker" data-face="F" data-index="5"></div>
+                    <div class="net-sticker" data-face="F" data-index="6"></div>
+                    <div class="net-sticker" data-face="F" data-index="7"></div>
+                    <div class="net-sticker" data-face="F" data-index="8"></div>
+                </div>
+
+                <!-- R face — row 2, col 3 -->
+                <div class="net-face" data-face="R">
+                    <div class="net-face-label">R</div>
+                    <div class="net-sticker" data-face="R" data-index="0"></div>
+                    <div class="net-sticker" data-face="R" data-index="1"></div>
+                    <div class="net-sticker" data-face="R" data-index="2"></div>
+                    <div class="net-sticker" data-face="R" data-index="3"></div>
+                    <div class="net-sticker" data-face="R" data-index="4"></div>
+                    <div class="net-sticker" data-face="R" data-index="5"></div>
+                    <div class="net-sticker" data-face="R" data-index="6"></div>
+                    <div class="net-sticker" data-face="R" data-index="7"></div>
+                    <div class="net-sticker" data-face="R" data-index="8"></div>
+                </div>
+
+                <!-- B face — row 2, col 4 -->
+                <div class="net-face" data-face="B">
+                    <div class="net-face-label">B</div>
+                    <div class="net-sticker" data-face="B" data-index="0"></div>
+                    <div class="net-sticker" data-face="B" data-index="1"></div>
+                    <div class="net-sticker" data-face="B" data-index="2"></div>
+                    <div class="net-sticker" data-face="B" data-index="3"></div>
+                    <div class="net-sticker" data-face="B" data-index="4"></div>
+                    <div class="net-sticker" data-face="B" data-index="5"></div>
+                    <div class="net-sticker" data-face="B" data-index="6"></div>
+                    <div class="net-sticker" data-face="B" data-index="7"></div>
+                    <div class="net-sticker" data-face="B" data-index="8"></div>
+                </div>
+
+                <!-- D face — row 3, col 2 -->
+                <div class="net-face" data-face="D">
+                    <div class="net-face-label">D</div>
+                    <div class="net-sticker" data-face="D" data-index="0"></div>
+                    <div class="net-sticker" data-face="D" data-index="1"></div>
+                    <div class="net-sticker" data-face="D" data-index="2"></div>
+                    <div class="net-sticker" data-face="D" data-index="3"></div>
+                    <div class="net-sticker" data-face="D" data-index="4"></div>
+                    <div class="net-sticker" data-face="D" data-index="5"></div>
+                    <div class="net-sticker" data-face="D" data-index="6"></div>
+                    <div class="net-sticker" data-face="D" data-index="7"></div>
+                    <div class="net-sticker" data-face="D" data-index="8"></div>
+                </div>
+            </div>
+
+            <div id="color-palette">
+                <div class="palette-color" data-color="U" title="White (U)"></div>
+                <div class="palette-color" data-color="R" title="Red (R)"></div>
+                <div class="palette-color" data-color="F" title="Green (F)"></div>
+                <div class="palette-color" data-color="D" title="Yellow (D)"></div>
+                <div class="palette-color" data-color="L" title="Orange (L)"></div>
+                <div class="palette-color" data-color="B" title="Blue (B)"></div>
+            </div>
+
+            <div id="verify-actions">
+                <button id="btn-back-scan" class="btn btn-ghost">← Back to Scan</button>
+                <button id="btn-clear-all" class="btn btn-ghost">↺ Clear</button>
+                <button id="btn-flip-faces" class="btn btn-ghost">↔️ Flip Faces</button>
+                <button id="btn-validate" class="btn btn-secondary">✓ Validate</button>
+                <span id="validation-message"></span>
+                <button id="btn-solve" class="btn btn-primary" disabled>🧠 Solve It!</button>
+            </div>
+        </section>
+
+        <!-- ===================== PHASE 3 — SOLVE ===================== -->
+        <section id="phase-solve" class="phase">
+            <div class="solve-content">
+                <div id="solve-cube-icon">
+                    <div class="cube-3d">
+                        <div class="cube-face cube-front"></div>
+                        <div class="cube-face cube-back"></div>
+                        <div class="cube-face cube-left"></div>
+                        <div class="cube-face cube-right"></div>
+                        <div class="cube-face cube-top"></div>
+                        <div class="cube-face cube-bottom"></div>
+                    </div>
+                </div>
+                <div id="solve-status">Initializing solver engine...</div>
+                <div id="solve-progress-container">
+                    <div id="solve-progress-bar"></div>
+                </div>
+                <div id="solve-result" style="display: none;"></div>
+                <button id="btn-solve-back" class="btn btn-ghost" style="display: none; margin-top: 24px;">← Go Back & Fix Colors</button>
+            </div>
+        </section>
+
+        <!-- ===================== PHASE 4 — ANIMATE ===================== -->
+        <section id="phase-animate" class="phase">
+            <div id="animate-layout">
+                <div id="cube-3d-container"></div>
+
+                <div id="solution-panel" class="glass-card">
+                    <h3>Solution Steps</h3>
+                    <div id="move-counter">Move 0 of 18</div>
+                    <div id="move-list"></div>
+                    <div id="move-description">Press play to begin the solution.</div>
+
+                    <div id="playback-controls">
+                        <button id="btn-first" class="btn btn-icon" title="First">⏮</button>
+                        <button id="btn-prev" class="btn btn-icon" title="Previous">◀</button>
+                        <button id="btn-play" class="btn btn-icon btn-play" title="Play">▶</button>
+                        <button id="btn-next" class="btn btn-icon" title="Next">▶</button>
+                        <button id="btn-last" class="btn btn-icon" title="Last">⏭</button>
+                    </div>
+
+                    <div id="speed-control">
+                        <label for="speed-slider">Speed</label>
+                        <input type="range" id="speed-slider" min="0.25" max="3" step="0.25" value="1">
+                        <span id="speed-label">1.0x</span>
+                    </div>
+
+                    <button id="btn-new-solve" class="btn btn-primary">🔄 Solve Another Cube</button>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
