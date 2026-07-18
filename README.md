@@ -2,7 +2,7 @@
 
 An interactive, 3D Rubik's Cube Solver built with HTML, CSS, and JavaScript. 
 
-You can access the live version of this solver here: **[Live Demo](https://gitarnavgoel.github.io/rubiks-solver/)**
+You can access the live version of this solver here: **[Live Demo]()**
 
 ## Features
 
@@ -12,24 +12,6 @@ You can access the live version of this solver here: **[Live Demo](https://gitar
 - **Piece Validation:** Instantly checks for physically impossible configurations (like duplicate edges or invalid corners) before solving.
 - **Kociemba Solver:** Runs the solver algorithm inside a Web Worker so the browser never freezes.
 - **3D Animation:** View the step-by-step solution on a 3D cube with speed controls.
-
-## How to Run Locally
-
-This is a static web app. You do not need to install any heavy packages.
-
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/gitarnavgoel/rubiks-solver.git
-   ```
-2. Navigate to the project directory:
-   ```bash
-   cd rubiks-solver
-   ```
-3. Start a local server (e.g., using Python):
-   ```bash
-   python -m http.server 8000
-   ```
-4. Open `http://localhost:8000` in your web browser. 
 
 *(Note: The webcam scanner requires a secure connection (`https://` or `localhost`) to access the camera).*
 
