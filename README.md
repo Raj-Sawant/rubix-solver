@@ -2,7 +2,7 @@
 
 An interactive, 3D Rubik's Cube Solver built with HTML, CSS, and JavaScript. 
 
-You can access the live version of this solver here: **[Live Demo]()**
+You can access the live version of this solver here: **[Live Demo](https://rubix-solver-pi.vercel.app/)**
 
 ## Features
 
